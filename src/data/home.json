@@ -1,0 +1,60 @@
+{
+  "hero": {
+    "title": "Selamat Datang",
+    "description": "Sistem modern untuk manajemen karyawan dan cuti, dirancang agar pengelolaan SDM menjadi lebih efisien dan terstruktur.",
+    "buttonText": "Mulai Sekarang",
+    "backgroundImage": "https://img.daisyui.com/images/stock/photo-1507358522600-9f71e620c44e.webp"
+  },
+  "visualExperience": {
+    "title": "Layanan Profesional Kami",
+    "subtitle": "Solusi lengkap untuk pengelolaan data karyawan dan pengajuan cuti.",
+    "services": [
+      {
+        "title": "Manajemen Karyawan",
+        "description": "Kelola profil, jabatan, dan data karyawan secara efisien."
+      },
+      {
+        "title": "Jenis Cuti Fleksibel",
+        "description": "Definisikan berbagai jenis cuti sesuai kebijakan perusahaan."
+      },
+      {
+        "title": "Persetujuan Otomatis",
+        "description": "Sistem persetujuan cuti berbasis peran dan alur kerja."
+      }
+    ]
+  },
+  "homeProductLists": {
+    "title": "Modul Utama",
+    "subtitle": "Fitur-fitur unggulan untuk mendukung operasional HR Anda.",
+    "products": [
+      {
+        "title": "Form Data Karyawan",
+        "description": "Input dan update informasi personal serta jabatan karyawan dengan mudah.",
+        "image": "/photo-1.jpg"
+      },
+      {
+        "title": "Form Jenis Cuti",
+        "description": "Buat dan atur berbagai kategori cuti seperti tahunan, sakit, dan lainnya.",
+        "image": "/photo-1.jpg"
+      },
+      {
+        "title": "Form Pengajuan Cuti",
+        "description": "Ajukan dan proses permohonan cuti secara digital dan terstruktur.",
+        "image": "/photo-1.jpg"
+      },
+      {
+        "title": "Riwayat & Laporan",
+        "description": "Lihat data histori cuti dan aktivitas pengguna dalam bentuk laporan.",
+        "image": "/photo-1.jpg"
+      }
+    ]
+  },
+  "homeGalleries": {
+    "title": "Fleksibel & Andal",
+    "subtitle": "Tampilan sistem yang modern dan mudah digunakan.",
+    "expertiseTitle": "Audit & Role Management",
+    "expertiseHeadline": "Keamanan dan Transparansi",
+    "expertiseDescription": "Dengan fitur manajemen akses berbasis peran serta audit trail, setiap aktivitas pengguna dapat ditelusuri secara menyeluruh.",
+    "image": "/photo-1.jpg"
+  }
+}
