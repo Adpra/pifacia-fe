@@ -1,6 +1,5 @@
 import Button from "../components/buttons/Button";
 import Footer from "../components/footer/Footer";
-import Hero from "../components/hero/Hero";
 import Nav from "../components/navbar/Nav";
 import homeData from "../data/home.json";
 

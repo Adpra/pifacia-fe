@@ -6,11 +6,20 @@ export interface ButtonProps {
   color?: "primary" | "secondary" | "success" | "info" | "warning" | "danger";
   disabled?: boolean;
   className?: any;
+  type?: "button" | "submit" | "reset";
   onClick?: () => void;
 }
 
 const Button = (props: ButtonProps) => {
-  const { text, size, color, disabled, className, onClick } = props;
+  const {
+    text,
+    size,
+    color,
+    disabled,
+    className,
+    onClick,
+    type = "button",
+  } = props;
 
   const colorClass = styles[color ?? "primary"];
   const sizeClass = styles[size ?? "sm"];
@@ -18,7 +27,7 @@ const Button = (props: ButtonProps) => {
 
   return (
     <button
-      type="button"
+      type={type}
       className={twMerge(
         "btn",
         colorClass,
@@ -46,7 +55,7 @@ const styles = {
   success: "btn-success",
   info: "btn-info",
   warning: "btn-warning",
-  danger: "btn-danger",
+  danger: "btn-error",
 
   // States
   disabled: "btn-disabled",

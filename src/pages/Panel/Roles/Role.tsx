@@ -1,0 +1,140 @@
+import { useEffect, useState } from "react";
+import Button from "../../../components/buttons/Button";
+import Input from "../../../components/form/input/InputField";
+import defaultAxios from "../../../utils/DefaultAxios";
+import { Link, useNavigate } from "react-router-dom";
+
+interface RoleData {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface Meta {
+  current_page: number;
+  last_page: number;
+}
+
+function Role() {
+  const [roles, setRoles] = useState<RoleData[]>([]);
+  const [meta, setMeta] = useState<Meta>({ current_page: 1, last_page: 1 });
+  const [search, setSearch] = useState("");
+
+  const navigate = useNavigate();
+
+  const getRoles = (page = 1, keyword = "") => {
+    defaultAxios
+      .get(`http://127.0.0.1:8000/api/v1/roles?page=${page}&search=${keyword}`)
+      .then((res) => {
+        setRoles(res.data.data);
+        setMeta(res.data.meta);
+      })
+      .catch((err) => console.error("Error:", err));
+  };
+
+  useEffect(() => {
+    getRoles();
+  }, []);
+
+  const handleSearch = () => {
+    getRoles(1, search); // saat search, reset ke halaman 1
+  };
+
+  const changePage = (page: number) => {
+    getRoles(page, search);
+  };
+
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this role?"
+    );
+    if (!confirmed) return;
+
+    try {
+      await defaultAxios.delete(`http://127.0.0.1:8000/api/v1/roles/${id}`);
+      alert("Role deleted successfully.");
+      getRoles(meta.current_page, search);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Failed to delete role.");
+    }
+  };
+
+  return (
+    <>
+      <div className="overflow-x-auto rounded-box border border-base-content/5 bg-white p-4 shadow text-base-100">
+        <h1 className="text-3xl font-bold">Role</h1>
+
+        <div className="flex justify-between items-center py-5">
+          <div className="flex gap-2 items-center">
+            <Input
+              placeholder="Search"
+              className="w-full"
+              name="search"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Button text="Search" color="secondary" onClick={handleSearch} />
+          </div>
+
+          <div className="flex justify-end py-5">
+            <Link to="/panel/role/create">
+              <Button text="Add Role" color="secondary" />
+            </Link>
+          </div>
+        </div>
+        <table className="table">
+          <thead className="bg-base-100 text-white">
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roles.map((role, index) => (
+              <tr key={index}>
+                <th>{index + 1}</th>
+                <td>{role.name}</td>
+                <td>{role.description}</td>
+                <td className="flex gap-2">
+                  <Button
+                    text="Edit"
+                    color="warning"
+                    onClick={() => navigate(`/panel/role/edit/${role.id}`)}
+                  />
+                  <Button
+                    text="Delete"
+                    color="danger"
+                    onClick={() => handleDelete(role.id)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {/* Pagination */}
+        <div className="flex justify-center mt-4 gap-2">
+          {[...Array(meta.last_page)].map((_, index) => {
+            const page = index + 1;
+            const isActive = meta.current_page === page;
+
+            return (
+              <button
+                key={page}
+                onClick={() => changePage(page)}
+                className={`px-3 py-1 rounded ${
+                  isActive ? "bg-blue-600 text-white" : "bg-gray-200"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default Role;
