@@ -89,7 +89,10 @@ const othersItems: NavItem[] = [
   {
     icon: <GroupIcon />,
     name: "Authentication",
-    subItems: [{ name: "Role Management", path: "/panel/role", pro: false }],
+    subItems: [
+      { name: "Role Management", path: "/panel/role", pro: false },
+      { name: "User Management", path: "/panel/user", pro: false },
+    ],
   },
 ];
 

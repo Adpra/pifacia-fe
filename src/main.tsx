@@ -4,12 +4,15 @@ import App from "./App";
 import "./index.css";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AppWrapper } from "./components/common/PageMeta";
+import { AuthProvider } from "./context/AuthContext";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <AppWrapper>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </AppWrapper>
     </ThemeProvider>
   </React.StrictMode>

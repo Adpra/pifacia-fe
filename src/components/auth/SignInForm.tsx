@@ -1,40 +1,80 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
-import Button from "../ui/button/Button";
 import defaultAxios from "../../utils/DefaultAxios";
+import Button from "../buttons/Button";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SignInForm() {
-  // const BaseApi = import.meta.env.REACT_APP_BASE_API + "login";
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // console.log(BaseApi);
+  const navigate = useNavigate();
 
   const [data, setData] = useState({
     email: "",
     password: "",
   });
 
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
+  const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    status: string;
+  } | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setAlert({
+        message: location.state.message,
+        status: location.state.status,
+      });
+
+      window.history.replaceState({}, document.title);
+
+      const timer = setTimeout(() => setAlert(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("change", e.target.name, e.target.value);
     setData({ ...data, [e.target.name]: e.target.value });
+    setErrors({});
+    setMessage("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    defaultAxios
-      .post("http://127.0.0.1:8000/api/v1/login", data)
-      .then((res) => {
-        localStorage.setItem("access_token", res.data.access_token);
-        navigate("/panel"); // 🔁 alihkan ke halaman /panel
-      })
-      .catch((err) => {
-        console.error("Login failed:", err);
-      });
+    try {
+      const res = await defaultAxios.post(
+        "http://127.0.0.1:8000/api/v1/login",
+        data
+      );
+      const token = res.data.access_token;
+      await login(token); //
+      navigate("/panel");
+    } catch (err: any) {
+      console.error("Login error:", err);
+
+      if (err.response) {
+        const status = err.response.status;
+
+        if (status === 422) {
+          setErrors(err.response.data.errors);
+        } else if (status === 401) {
+          setMessage("Email atau password salah.");
+        } else {
+          setMessage("Terjadi kesalahan saat login.");
+        }
+      } else {
+        setMessage("Tidak dapat terhubung ke server.");
+      }
+    }
   };
 
   return (
@@ -61,20 +101,42 @@ export default function SignInForm() {
           <div>
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
+                {alert && (
+                  <div
+                    className={`mb-4 p-3 rounded ${
+                      alert.status === "success"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {alert.message}
+                  </div>
+                )}
+                {message && (
+                  <div className="text-sm text-red-500">{message}</div>
+                )}
+
                 <div>
                   <Label>
-                    Email <span className="text-error-500">*</span>{" "}
+                    Email <span className="text-error-500">*</span>
                   </Label>
                   <Input
                     placeholder="info@gmail.com"
                     type="email"
                     onChange={handleChange}
                     name="email"
+                    value={data.email}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.email[0]}
+                    </p>
+                  )}
                 </div>
+
                 <div>
                   <Label>
-                    Password <span className="text-error-500">*</span>{" "}
+                    Password <span className="text-error-500">*</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -82,6 +144,7 @@ export default function SignInForm() {
                       placeholder="Enter your password"
                       name="password"
                       onChange={handleChange}
+                      value={data.password}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -94,18 +157,27 @@ export default function SignInForm() {
                       )}
                     </span>
                   </div>
+                  {errors.password && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.password[0]}
+                    </p>
+                  )}
                 </div>
+
                 <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
-                  </Button>
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    type="submit"
+                    text="Sign In"
+                  />
                 </div>
               </div>
             </form>
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Don&apos;t have an account? {""}
+                Don&apos;t have an account?
                 <Link
                   to="/sign-up"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"

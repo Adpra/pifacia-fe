@@ -13,6 +13,11 @@ import ProtectedRoute from "./ProtectedRoute";
 import Role from "../pages/Panel/Roles/Role";
 import RoleCreate from "../pages/Panel/Roles/RoleCreate";
 import RoleEdit from "../pages/Panel/Roles/RoleEdit";
+import User from "../pages/Users/User";
+import UserCreate from "../pages/Users/UserCreate";
+import UserEdit from "../pages/Users/UserEdit";
+import RequireAdmin from "../components/auth/RequireAdmin";
+import Unauthorized from "../pages/Panel/OtherPage/Unauthorized";
 
 const router = createBrowserRouter([
   // Public Routes
@@ -31,6 +36,10 @@ const router = createBrowserRouter([
   {
     path: "*",
     element: <NotFound />,
+  },
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
   },
 
   // Protected Routes
@@ -58,6 +67,31 @@ const router = createBrowserRouter([
           {
             path: "/panel/role/edit/:id",
             element: <RoleEdit />,
+          },
+          // Users
+          {
+            path: "/panel/user",
+            element: (
+              <RequireAdmin>
+                <User />
+              </RequireAdmin>
+            ),
+          },
+          {
+            path: "/panel/user/create",
+            element: (
+              <RequireAdmin>
+                <UserCreate />
+              </RequireAdmin>
+            ),
+          },
+          {
+            path: "/panel/user/edit/:id",
+            element: (
+              <RequireAdmin>
+                <UserEdit />
+              </RequireAdmin>
+            ),
           },
         ],
       },

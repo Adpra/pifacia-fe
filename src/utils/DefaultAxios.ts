@@ -1,47 +1,44 @@
 import axios from "axios";
 
 const defaultAxios = axios.create({
-	// baseURL: process.env.REACT_APP_BASE_API,
-	headers: {
-		Accept: 'application/json',
-		'Content-Type': 'application/json',
-	}
+  // baseURL: process.env.REACT_APP_BASE_API,
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
 });
 
-// const isLogin = error.response.config.url.match(/login/);
-
-if (localStorage.getItem('access_token')) {
-	defaultAxios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('access_token')}`;
-}
+defaultAxios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 defaultAxios.interceptors.response.use(function (response) {
-	// Any status code that lie within the range of 2xx cause this function to trigger
-	// Do something with response data
-	return response;
+  return response;
 }, function (error) {
-	// Any status codes that falls outside the range of 2xx cause this function to trigger
-	// Do something with response error
+  if (error.response?.status === 401) {
+    localStorage.removeItem('access_token');
+	window.location.href = "/sign-in";
+	return Promise.reject(error);	
+  }
 
-	// unauthenticated
-	if (error.response?.status === 401) {
-		localStorage.removeItem('access_token');
+  if (error.response?.status === 422) {
+    console.log(error.response);
+    return Promise.reject(error);
+  }
 
-		window.location.reload();
-	}
+  if (error.response?.status === 500) {
+    console.log(error.response);
+    return Promise.reject(error);	
+  }
 
-	if (error.response?.status === 422) {
-		console.log(error.response);
-		return;
-	}
-
-	if (error.response?.status === 500) {
-		console.log(error.response);
-		return;
-	}
-
-	console.log(error);
-
-	return Promise.reject(error);
+  console.log(error);
+  return Promise.reject(error);
 });
 
 export default defaultAxios;

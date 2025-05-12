@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import Button from "../../../components/buttons/Button";
-import Input from "../../../components/form/input/InputField";
-import defaultAxios from "../../../utils/DefaultAxios";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import FullPageLoader from "../../../components/common/FullPageLoader";
 
-interface RoleData {
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import defaultAxios from "../../utils/DefaultAxios";
+import Input from "../../components/form/input/InputField";
+import Button from "../../components/buttons/Button";
+import FullPageLoader from "../../components/common/FullPageLoader";
+
+interface UserData {
   id: string;
   name: string;
-  description: string;
+  email: string;
+  role: string;
 }
 
 interface Meta {
@@ -16,25 +18,25 @@ interface Meta {
   last_page: number;
 }
 
-function Role() {
+function User() {
   const location = useLocation();
   const [alert, setAlert] = useState<{
     message: string;
     status: string;
   } | null>(null);
-  const [roles, setRoles] = useState<RoleData[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [meta, setMeta] = useState<Meta>({ current_page: 1, last_page: 1 });
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const getRoles = (page = 1, keyword = "") => {
+  const getUsers = (page = 1, keyword = "") => {
     setLoading(true);
     defaultAxios
-      .get(`http://127.0.0.1:8000/api/v1/roles?page=${page}&search=${keyword}`)
+      .get(`http://127.0.0.1:8000/api/v1/users?page=${page}&search=${keyword}`)
       .then((res) => {
-        setRoles(res.data.data);
+        setUsers(res.data.data);
         setMeta(res.data.meta);
       })
       .catch((err) => console.error("Error:", err))
@@ -42,7 +44,7 @@ function Role() {
   };
 
   useEffect(() => {
-    getRoles();
+    getUsers();
 
     if (location.state?.message) {
       setAlert({
@@ -58,11 +60,11 @@ function Role() {
   }, []);
 
   const handleSearch = () => {
-    getRoles(1, search);
+    getUsers(1, search);
   };
 
   const changePage = (page: number) => {
-    getRoles(page, search);
+    getUsers(page, search);
   };
 
   const handleDelete = async (id: string) => {
@@ -73,16 +75,16 @@ function Role() {
 
     try {
       setLoading(true);
-      await defaultAxios.delete(`http://127.0.0.1:8000/api/v1/roles/${id}`);
+      await defaultAxios.delete(`http://127.0.0.1:8000/api/v1/users/${id}`);
       setAlert({
-        message: "Role deleted successfully.",
+        message: "User deleted successfully.",
         status: "success",
       });
-      getRoles(meta.current_page, search);
+      getUsers(meta.current_page, search);
     } catch (error) {
       console.error("Delete failed:", error);
       setAlert({
-        message: "Failed to delete role.",
+        message: "Failed to delete user.",
         status: "error",
       });
     } finally {
@@ -95,7 +97,7 @@ function Role() {
   return (
     <>
       <div className="overflow-x-auto rounded-box border border-base-content/5 bg-white p-4 shadow text-base-100">
-        <h1 className="text-3xl font-bold pb-5">Role</h1>
+        <h1 className="text-3xl font-bold pb-5">Users</h1>
 
         {alert && (
           <div
@@ -121,8 +123,8 @@ function Role() {
           </div>
 
           <div className="flex justify-end py-5">
-            <Link to="/panel/role/create">
-              <Button text="Add Role" color="secondary" />
+            <Link to="/panel/user/create">
+              <Button text="Add User" color="secondary" />
             </Link>
           </div>
         </div>
@@ -131,26 +133,28 @@ function Role() {
             <tr>
               <th></th>
               <th>Name</th>
-              <th>Description</th>
+              <th>Email</th>
+              <th>Role</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {roles.map((role, index) => (
+            {users.map((user, index) => (
               <tr key={index}>
                 <th>{index + 1}</th>
-                <td>{role.name}</td>
-                <td>{role.description}</td>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.role}</td>
                 <td className="flex gap-2">
                   <Button
                     text="Edit"
                     color="warning"
-                    onClick={() => navigate(`/panel/role/edit/${role.id}`)}
+                    onClick={() => navigate(`/panel/user/edit/${user.id}`)}
                   />
                   <Button
                     text="Delete"
                     color="danger"
-                    onClick={() => handleDelete(role.id)}
+                    onClick={() => handleDelete(user.id)}
                   />
                 </td>
               </tr>
@@ -181,4 +185,4 @@ function Role() {
   );
 }
 
-export default Role;
+export default User;
