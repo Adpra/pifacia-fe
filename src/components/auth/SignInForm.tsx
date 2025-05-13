@@ -41,7 +41,6 @@ export default function SignInForm() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("change", e.target.name, e.target.value);
     setData({ ...data, [e.target.name]: e.target.value });
     setErrors({});
     setMessage("");
@@ -56,7 +55,7 @@ export default function SignInForm() {
         data
       );
       const token = res.data.access_token;
-      await login(token); //
+      await login(token);
       navigate("/panel");
     } catch (err: any) {
       console.error("Login error:", err);

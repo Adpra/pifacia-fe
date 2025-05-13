@@ -12,6 +12,7 @@ import {
   TableIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
 // import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
@@ -21,82 +22,46 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    subItems: [{ name: "Role Management", path: "/panel", pro: false }],
-  },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
-  // {
-  //   icon: <UserCircleIcon />,
-  //   name: "User Profile",
-  //   path: "/profile",
-  // },
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
-];
-
-const othersItems: NavItem[] = [
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
-  {
-    icon: <GroupIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Role Management", path: "/panel/role", pro: false },
-      { name: "User Management", path: "/panel/user", pro: false },
-    ],
-  },
-];
-
 const AppSidebar: React.FC = () => {
+  const { authUser } = useAuth();
+
+  const navItems: NavItem[] = [
+    {
+      icon: <GridIcon />,
+      name: "Dashboard",
+      subItems: [
+        { name: "Leave Requests", path: "/panel/leave-request", pro: false },
+        ...(authUser?.role === "admin"
+          ? [
+              { name: "Leave Types", path: "/panel/leave-type", pro: false },
+
+              {
+                name: "Leave Approvals",
+                path: "/panel/leave-approval",
+                pro: false,
+              },
+              {
+                name: "Approval Requests ",
+                path: "/panel/approval/request",
+                pro: false,
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
+  const othersItems: NavItem[] = [
+    {
+      icon: <GroupIcon />,
+      name: "Authentication",
+      subItems: [
+        { name: "Role Management", path: "/panel/role", pro: false },
+        { name: "User Management", path: "/panel/user", pro: false },
+      ],
+    },
+  ];
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
 

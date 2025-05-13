@@ -5,8 +5,6 @@ import { useAuth } from "../../context/AuthContext";
 export default function UserDropdown() {
   const { authUser } = useAuth();
 
-  console.log(authUser);
-
   const [isOpen, setIsOpen] = useState(false);
 
   function toggleDropdown() {

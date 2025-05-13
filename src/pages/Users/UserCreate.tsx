@@ -60,7 +60,7 @@ function UserCreate() {
     try {
       setLoading(true);
       await defaultAxios.post("http://127.0.0.1:8000/api/v1/users", data);
-      navigate("/panel/users", {
+      navigate("/panel/user", {
         state: { message: "User successfully created", status: "success" },
       });
     } catch (error) {
@@ -68,7 +68,7 @@ function UserCreate() {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors);
       } else {
-        navigate("/panel/users", {
+        navigate("/panel/user", {
           state: { message: "Failed to create user", status: "error" },
         });
       }

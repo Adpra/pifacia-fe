@@ -35,6 +35,7 @@ const Button = (props: ButtonProps) => {
         disabledClass,
         className ?? ""
       )}
+      disabled={disabled}
       onClick={onClick}
     >
       {text}
