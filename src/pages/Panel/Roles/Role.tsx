@@ -4,6 +4,9 @@ import Input from "../../../components/form/input/InputField";
 import defaultAxios from "../../../utils/DefaultAxios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import FullPageLoader from "../../../components/common/FullPageLoader";
+import axios from "axios";
+import { useAuth } from "../../../context/AuthContext";
+import Label from "../../../components/form/Label";
 
 interface RoleData {
   id: string;
@@ -17,6 +20,8 @@ interface Meta {
 }
 
 function Role() {
+  const { authUser } = useAuth();
+
   const location = useLocation();
   const [alert, setAlert] = useState<{
     message: string;
@@ -40,22 +45,6 @@ function Role() {
       .catch((err) => console.error("Error:", err))
       .finally(() => setLoading(false));
   };
-
-  useEffect(() => {
-    getRoles();
-
-    if (location.state?.message) {
-      setAlert({
-        message: location.state.message,
-        status: location.state.status,
-      });
-
-      window.history.replaceState({}, document.title);
-
-      const timer = setTimeout(() => setAlert(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   const handleSearch = () => {
     getRoles(1, search);
@@ -90,6 +79,95 @@ function Role() {
     }
   };
 
+  const handleExport = async () => {
+    const exportData = roles.map((item) => ({
+      name: item.name,
+      description: item.description,
+    }));
+
+    try {
+      setLoading(true);
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/v1/excel/export",
+        {
+          data: exportData,
+          filename: "leave_requests_export",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authUser?.access_token}`,
+          },
+        }
+      );
+
+      const filePath = res.data.file_path;
+      const fileUrl = `http://127.0.0.1:8000${filePath}`;
+
+      setTimeout(() => {
+        window.open(fileUrl, "_blank");
+      }, 3000);
+    } catch (error) {
+      console.error("Export error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("table", "roles");
+    formData.append("unique_by[]", "name");
+
+    try {
+      setLoading(true);
+
+      const res = await defaultAxios.post(
+        "http://127.0.0.1:8000/api/v1/excel/import",
+        formData
+      );
+
+      console.log("Import success:", res.data);
+
+      getRoles(meta.current_page, search);
+
+      setAlert({
+        message: "Import success",
+        status: "success",
+      });
+    } catch (error) {
+      console.error("Import error:", error);
+      setAlert({
+        message: "Import failed",
+        status: "error",
+      });
+    } finally {
+      setLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  useEffect(() => {
+    getRoles();
+    handleImport;
+
+    if (location.state?.message) {
+      setAlert({
+        message: location.state.message,
+        status: location.state.status,
+      });
+      window.history.replaceState({}, document.title);
+
+      const timer = setTimeout(() => setAlert(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
+
   if (loading) return <FullPageLoader />;
 
   return (
@@ -118,8 +196,25 @@ function Role() {
               onChange={(e) => setSearch(e.target.value)}
             />
             <Button text="Search" color="secondary" onClick={handleSearch} />
+            <div>
+              <Button
+                text="Export"
+                color="info"
+                onClick={handleExport}
+                disabled={authUser?.role !== "admin"}
+              />
+            </div>
+            <div className="flex gap-2 items-center">
+              <Label className="text-indigo-400">Import</Label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImport}
+                disabled={authUser?.role !== "admin"}
+                className="file-input file-input-bordered file-input-primary w-full max-w-xs"
+              />
+            </div>
           </div>
-
           <div className="flex justify-end py-5">
             <Link to="/panel/role/create">
               <Button text="Add Role" color="secondary" />

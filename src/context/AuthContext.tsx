@@ -7,9 +7,11 @@ import {
   type ReactNode,
 } from "react";
 import defaultAxios from "../utils/DefaultAxios";
+import type { access } from "fs";
 
 interface AuthUser {
   id: string;
+  access_token: string;
   name: string;
   email: string;
   role: string;
@@ -36,7 +38,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUser = async () => {
     try {
       const res = await defaultAxios.get("http://127.0.0.1:8000/api/v1/me");
-      setAuthUser(res.data.user);
+      const data = res.data;
+      const userWithToken = {
+        ...data.user,
+        access_token: data.access_token,
+      };
+
+      setAuthUser(userWithToken);
     } catch (err) {
       localStorage.removeItem("access_token");
       setAuthUser(null);

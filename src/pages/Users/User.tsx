@@ -5,6 +5,9 @@ import defaultAxios from "../../utils/DefaultAxios";
 import Input from "../../components/form/input/InputField";
 import Button from "../../components/buttons/Button";
 import FullPageLoader from "../../components/common/FullPageLoader";
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
+import Label from "../../components/form/Label";
 
 interface UserData {
   id: string;
@@ -19,6 +22,7 @@ interface Meta {
 }
 
 function User() {
+  const { authUser } = useAuth();
   const location = useLocation();
   const [alert, setAlert] = useState<{
     message: string;
@@ -92,6 +96,80 @@ function User() {
     }
   };
 
+  const handleExport = async () => {
+    const exportData = users.map((item) => ({
+      name: item.name,
+      email: item.email,
+      role: item.role,
+    }));
+
+    try {
+      setLoading(true);
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/v1/excel/export",
+        {
+          data: exportData,
+          filename: "leave_requests_export",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authUser?.access_token}`,
+          },
+        }
+      );
+
+      const filePath = res.data.file_path;
+      const fileUrl = `http://127.0.0.1:8000${filePath}`;
+
+      setTimeout(() => {
+        window.open(fileUrl, "_blank");
+      }, 3000);
+    } catch (error) {
+      console.error("Export error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("table", "users");
+    formData.append("unique_by[]", "email");
+
+    try {
+      setLoading(true);
+
+      const res = await defaultAxios.post(
+        "http://127.0.0.1:8000/api/v1/excel/import",
+        formData
+      );
+
+      console.log("Import success:", res.data);
+
+      getUsers(meta.current_page, search);
+
+      setAlert({
+        message: "Import success",
+        status: "success",
+      });
+    } catch (error) {
+      console.error("Import error:", error);
+      setAlert({
+        message: "Import failed",
+        status: "error",
+      });
+    } finally {
+      setLoading(false);
+      e.target.value = "";
+    }
+  };
+
   if (loading) return <FullPageLoader />;
 
   return (
@@ -120,6 +198,19 @@ function User() {
               onChange={(e) => setSearch(e.target.value)}
             />
             <Button text="Search" color="secondary" onClick={handleSearch} />
+            <div>
+              <Button text="Export" color="info" onClick={handleExport} />
+            </div>
+            <div className="flex gap-2 items-center">
+              <Label className="text-indigo-400">Import</Label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImport}
+                disabled={authUser?.role !== "admin"}
+                className="file-input file-input-bordered file-input-primary w-full max-w-xs"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end py-5">
